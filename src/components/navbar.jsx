@@ -5,11 +5,11 @@ export default function Navbar() {
     <nav className="nav">
         <Link to="/" className="site-title">Music Streaming Platform</Link>
         <ul>
-        <CustomLink to="/">Songs</CustomLink>
-        <CustomLink to="/search">Search</CustomLink>
-        <CustomLink to="/liked">Liked</CustomLink>
-        <CustomLink to="/playlists">Playlists</CustomLink>
-        <CustomLink to="/artists">Artists</CustomLink>
+          <CustomLink to="/">Songs</CustomLink>
+          <CustomLink to="/search">Search</CustomLink>
+          <CustomLink to="/liked">Liked</CustomLink>
+          <CustomLink to="/playlists">Playlists</CustomLink>
+          <CustomLink to="/artists">Artists</CustomLink>
         </ul>
     </nav>
   )
