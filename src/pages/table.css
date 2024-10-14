@@ -1,0 +1,32 @@
+table {
+    width: 100%; /* Full width to match the button row */
+    border-collapse: collapse; /* Remove space between cells */
+    margin-top: 20px; /* Space above the table */
+}
+
+th, td {
+    padding: 12px; /* Padding for table cells */
+    text-align: left; /* Align text to the left */
+    border: 1px solid #ddd; /* Light border for table cells */
+}
+
+th {
+    background-color: #f2f2f2; /* Light gray background for headings */
+    color: #333; /* Dark text color for headings */
+    font-weight: bold; /* Bold text for headings */
+}
+
+tbody tr:nth-child(even) {
+    background-color: #f9f9f9; /* Light gray for even rows */
+}
+
+tbody tr:hover {
+    background-color: #d0d0d0; /* Highlight row on hover */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    th, td {
+        padding: 8px; /* Reduce padding for smaller screens */
+    }
+}

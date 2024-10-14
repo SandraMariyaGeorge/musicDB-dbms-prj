@@ -1,27 +1,23 @@
-import Navbar from "./components/navbar";
-import "./style.css";
-import Songs from "./pages/songs";
-import Search from "./pages/search";
-import Liked from "./pages/liked";
-import Artists from "./pages/artists";
-import Playlists from "./pages/playlists";
-import AddPlaylist from "./components/AddPlaylist";
-import AddSong from "./components/AddSong";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes } from 'react-router-dom';
+import BaseLayout from './pages/BaseLayout.jsx';
+import Users from './pages/users/users.jsx';
+import Artists from './pages/artists/artists.jsx';
+import Songs from './pages/songs/songs.jsx';
+import Playlists from './pages/playlists/playlists.jsx';
+import Genres from './pages/genre/genre.jsx';
 
 export default function App() {
   return (
-  <>
-    <Navbar />
     <Routes>
-      <Route path="/" element={<Songs />} />
-      <Route path="/addsong" element={<AddSong />} />
-      <Route path="/addplaylist" element={<AddPlaylist />} />
-      <Route path="/search" element={<Search />} />
-      <Route path="/liked" element={<Liked />} />
-      <Route path="/playlists" element={<Playlists />} />
-      <Route path="/artists" element={<Artists />} />
+      {/* BaseLayout as the parent route */}
+      <Route path="/" element={<BaseLayout />}>
+        {/* Child routes - These will be rendered in the Outlet */}
+        <Route path="users" element={<Users />} />
+        <Route path="artists" element={<Artists />} />
+        <Route path="songs" element={<Songs />} />
+        <Route path="playlists" element={<Playlists />} />
+        <Route path="genres" element={<Genres />} /> 
+      </Route>
     </Routes>
-  </>
-  )
+  );
 }
