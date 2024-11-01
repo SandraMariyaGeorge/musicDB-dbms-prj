@@ -6,7 +6,7 @@ export default function Genres() {
     const [genres, setGenres] = useState([]); // State to hold genres
     const [isOpen, setIsOpen] = useState(false); // State to manage dialog box
     const [newGenre, setNewGenre] = useState({
-        genre_id: '',
+        id: '',
         genre_name: ''
     });
     const [editingGenre, setEditingGenre] = useState(null); // State for editing a genre
@@ -43,7 +43,7 @@ export default function Genres() {
             try {
                 await axios.put(`http://localhost:3000/api/genres/${editingGenre}`, { genre_name: newGenre.genre_name });
                 setGenres((prev) =>
-                    prev.map((genre) => genre.genre_id === editingGenre ? newGenre : genre)
+                    prev.map((genre) => genre.id === editingGenre ? newGenre : genre)
                 );
                 setEditingGenre(null);
             } catch (error) {
@@ -65,7 +65,7 @@ export default function Genres() {
     // Reset form
     const resetForm = () => {
         setNewGenre({
-            genre_id: '',
+            id: '',
             genre_name: ''
         });
     };
@@ -74,7 +74,7 @@ export default function Genres() {
     const handleDelete = async (genreId) => {
         try {
             await axios.delete(`http://localhost:3000/api/genres/${genreId}`);
-            setGenres((prev) => prev.filter((genre) => genre.genre_id !== genreId));
+            setGenres((prev) => prev.filter((genre) => genre.id !== genreId));
         } catch (error) {
             console.error("Error deleting genre:", error);
         }
@@ -83,7 +83,7 @@ export default function Genres() {
     // Edit genre
     const handleEdit = (genre) => {
         setNewGenre(genre);
-        setEditingGenre(genre.genre_id);
+        setEditingGenre(genre.id);
         setIsOpen(true);
         setDropdownOpenIndex(null);
     };
@@ -102,9 +102,9 @@ export default function Genres() {
                     <form onSubmit={handleSubmit}>
                         <input
                             type="text"
-                            name="genre_id"
+                            name="id"
                             placeholder="Genre ID"
-                            value={newGenre.genre_id}
+                            value={newGenre.id}
                             onChange={handleChange}
                             required
                         />
@@ -131,7 +131,7 @@ export default function Genres() {
                 <tbody>
                     {genres.map((genre, index) => (
                         <tr key={index} className="genre-row">
-                            <td>{genre.genre_id}</td>
+                            <td>{genre.id}</td>
                             <td>{genre.genre_name}</td>
                             <td>
                                 <div className="actions">
@@ -144,7 +144,7 @@ export default function Genres() {
                                     {dropdownOpenIndex === index && (
                                         <div className="dropdown">
                                             <button onClick={() => handleEdit(genre)}>Edit</button>
-                                            <button onClick={() => handleDelete(genre.genre_id)}>Delete</button>
+                                            <button onClick={() => handleDelete(genre.id)}>Delete</button>
                                         </div>
                                     )}
                                 </div>

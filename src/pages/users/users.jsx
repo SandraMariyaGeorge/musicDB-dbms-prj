@@ -6,7 +6,7 @@ export default function User() {
     const [users, setUsers] = useState([]); // State to hold users
     const [isOpen, setIsOpen] = useState(false); // State to manage dialog box
     const [newUser, setNewUser] = useState({
-        user_id: '',
+        id: '',
         username: '',
         email: '',
         subscription_plan: '',
@@ -64,7 +64,7 @@ export default function User() {
     // Reset form
     const resetForm = () => {
         setNewUser({
-            user_id: '',
+            id: '',
             username: '',
             email: '',
             subscription_plan: '',
@@ -87,7 +87,7 @@ export default function User() {
     // Edit a user
     const handleEdit = (user) => {
         setNewUser(user); // Fill form with user data
-        setEditingUser(user.user_id); // Set user_id for editing
+        setEditingUser(user.id); // Set user_id for editing
         setIsOpen(true); // Open the dialog
         setDropdownOpenIndex(null); // Close dropdown
     };
@@ -95,6 +95,11 @@ export default function User() {
     // Toggle dropdown for specific row
     const toggleDropdown = (index) => {
         setDropdownOpenIndex(dropdownOpenIndex === index ? null : index);
+    };
+
+    const formatDate = (dateString) => {
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString(undefined, options);
     };
 
     return (
@@ -107,9 +112,9 @@ export default function User() {
                     <form onSubmit={handleSubmit}>
                         <input
                             type="text"
-                            name="user_id"
+                            name="id"
                             placeholder="User ID"
-                            value={newUser.user_id}
+                            value={newUser.id}
                             onChange={handleChange}
                             required
                         />
@@ -180,12 +185,12 @@ export default function User() {
                 <tbody>
                     {users.map((user, index) => (
                         <tr key={index} className="user-row">
-                            <td>{user.user_id}</td>
-                            <td>{user.username}</td>
+                            <td>{user.id}</td>
+                            <td>{user.name}</td>
                             <td>{user.email}</td>
                             <td>{user.subscription_plan}</td>
-                            <td>{user.join_date}</td>
-                            <td>{user.birthdate}</td>
+                            <td>{formatDate(user.join_date)}</td>
+                            <td>{formatDate(user.dob)}</td>
                             <td>{user.country}</td>
                             <td>
                                 <div className="actions">
@@ -198,7 +203,7 @@ export default function User() {
                                     {dropdownOpenIndex === index && (
                                         <div className="dropdown">
                                             <button onClick={() => handleEdit(user)}>Edit</button>
-                                            <button onClick={() => handleDelete(user.user_id)}>Delete</button>
+                                            <button onClick={() => handleDelete(user.id)}>Delete</button>
                                         </div>
                                     )}
                                 </div>
