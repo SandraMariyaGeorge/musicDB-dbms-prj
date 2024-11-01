@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../table.css"; // Import the CSS file for this component
 
 export default function Songs() {
-    const [songs, setSongs] = useState([]); // State to hold songs
+    const [songs, setSongs] = useState([]); // State to hold songs from backend
     const [isOpen, setIsOpen] = useState(false); // State to manage dialog box
     const [newSong, setNewSong] = useState({
         song_id: '',
@@ -11,12 +11,51 @@ export default function Songs() {
         artist_id: '',
         genre_id: '',
         release_date: '',
-        plays: 0
+        no_of_times_played: 0
     });
     const [editingSong, setEditingSong] = useState(null); // State for editing a song
     const [dropdownOpenIndex, setDropdownOpenIndex] = useState(null); // State to manage dropdown visibility
+    const [artists, setArtists] = useState([]); // State for artists
+    const [genres, setGenres] = useState([]); // State for genres
 
-    // Function to handle input changes
+    // Fetch songs, artists, and genres from backend on component mount
+    useEffect(() => {
+        fetchSongs();
+        fetchArtists();
+        fetchGenres();
+    }, []);
+
+    const fetchSongs = async () => {
+        try {
+            const response = await fetch('http://localhost:3000/api/songs'); // Adjust endpoint as needed
+            const data = await response.json();
+            setSongs(data);
+        } catch (error) {
+            console.error('Error fetching songs:', error);
+        }
+    };
+
+    const fetchArtists = async () => {
+        try {
+            const response = await fetch('http://localhost:3000/api/artists'); // Adjust endpoint as needed
+            const data = await response.json();
+            setArtists(data);
+        } catch (error) {
+            console.error('Error fetching artists:', error);
+        }
+    };
+
+    const fetchGenres = async () => {
+        try {
+            const response = await fetch('http://localhost:3000/api/genres'); // Adjust endpoint as needed
+            const data = await response.json();
+            setGenres(data);
+        } catch (error) {
+            console.error('Error fetching genres:', error);
+        }
+    };
+
+    // Handle input changes for form
     const handleChange = (e) => {
         const { name, value } = e.target;
         setNewSong((prev) => ({
@@ -25,24 +64,83 @@ export default function Songs() {
         }));
     };
 
-    // Function to handle form submission
-    const handleSubmit = (e) => {
+    // Handle form submission for adding/updating a song
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (editingSong) {
-            // Update existing song
-            setSongs((prev) =>
-                prev.map(song => song.song_id === editingSong ? newSong : song)
-            );
-            setEditingSong(null); // Reset editing song state
+            await updateSong(editingSong);
         } else {
-            // Add new song to songs state
-            setSongs((prev) => [...prev, newSong]);
+            await addSong();
         }
-        setIsOpen(false); // Close dialog
-        resetForm(); // Reset form
+        setIsOpen(false);
+        resetForm();
     };
 
-    // Function to reset form
+    const addSong = async () => {
+        try {
+            const response = await fetch('http://localhost:3000/api/songs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newSong)
+            });
+            const addedSong = await response.json();
+            setSongs((prev) => [...prev, addedSong]);
+        } catch (error) {
+            console.error('Error adding song:', error);
+        }
+    };
+
+    const updateSong = async (songId) => {
+        try {
+            const response = await fetch(`http://localhost:3000/api/songs/${songId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newSong)
+            });
+            const updatedSong = await response.json();
+            setSongs((prev) => prev.map(song => song.song_id === songId ? updatedSong : song));
+        } catch (error) {
+            console.error('Error updating song:', error);
+        }
+        setEditingSong(null);
+    };
+
+    const handleDelete = async (songId) => {
+        try {
+            await fetch(`http://localhost:3000/api/songs/${songId}`, {
+                method: 'DELETE'
+            });
+            setSongs((prev) => prev.filter(song => song.song_id !== songId));
+        } catch (error) {
+            console.error('Error deleting song:', error);
+        }
+    };
+
+    const handleEdit = (song) => {
+        setNewSong(song);
+        setEditingSong(song.song_id);
+        setIsOpen(true);
+        setDropdownOpenIndex(null);
+    };
+
+    const toggleDropdown = (index) => {
+        setDropdownOpenIndex(dropdownOpenIndex === index ? null : index);
+    };
+
+    const increasePlays = async (songId) => {
+        const song = songs.find(song => song.song_id === songId);
+        if (song) {
+            await updateSong(songId, { ...song, plays: song.plays + 1 });
+        }
+    };
+
+    const decreasePlays = async (songId) => {
+        const song = songs.find(song => song.song_id === songId);
+        if (song && song.plays > 0) {
+            await updateSong(songId, { ...song, plays: song.plays - 1 });
+        }
+    };
+
     const resetForm = () => {
         setNewSong({
             song_id: '',
@@ -55,49 +153,11 @@ export default function Songs() {
         });
     };
 
-    // Function to handle delete song
-    const handleDelete = (songId) => {
-        setSongs((prev) => prev.filter(song => song.song_id !== songId));
-    };
-
-    // Function to handle edit song
-    const handleEdit = (song) => {
-        setNewSong(song); // Set the form fields to the song data
-        setEditingSong(song.song_id); // Set the song id of the song being edited
-        setIsOpen(true); // Open the dialog
-        setDropdownOpenIndex(null); // Close dropdown on edit
-    };
-
-    // Function to toggle dropdown for specific row
-    const toggleDropdown = (index) => {
-        setDropdownOpenIndex(dropdownOpenIndex === index ? null : index); // Toggle dropdown for the row
-    };
-
-    // Function to increase play count
-    const increasePlays = (songId) => {
-        setSongs((prev) =>
-            prev.map(song =>
-                song.song_id === songId ? { ...song, plays: song.plays + 1 } : song
-            )
-        );
-    };
-
-    // Function to decrease play count
-    const decreasePlays = (songId) => {
-        setSongs((prev) =>
-            prev.map(song =>
-                song.song_id === songId && song.plays > 0
-                    ? { ...song, plays: song.plays - 1 }
-                    : song
-            )
-        );
-    };
-
     return (
         <div>
-            <button onClick={() => setIsOpen(true)}>Add Song</button> {/* Button to open dialog */}
+            <button onClick={() => setIsOpen(true)}>Add Song</button>
 
-            {isOpen && (  // Dialog box conditionally rendered
+            {isOpen && (
                 <div className="modal">
                     <h2>{editingSong ? 'Edit Song' : 'Add New Song'}</h2>
                     <form onSubmit={handleSubmit}>
@@ -125,22 +185,28 @@ export default function Songs() {
                             onChange={handleChange}
                             required
                         />
-                        <input
-                            type="text"
+                        <select
                             name="artist_id"
-                            placeholder="Artist ID"
                             value={newSong.artist_id}
                             onChange={handleChange}
                             required
-                        />
-                        <input
-                            type="text"
+                        >
+                            <option value="">Select Artist</option>
+                            {artists.map(artist => (
+                                <option key={artist.artist_id} value={artist.artist_id}>{artist.artist_name}</option>
+                            ))}
+                        </select>
+                        <select
                             name="genre_id"
-                            placeholder="Genre ID"
                             value={newSong.genre_id}
                             onChange={handleChange}
                             required
-                        />
+                        >
+                            <option value="">Select Genre</option>
+                            {genres.map(genre => (
+                                <option key={genre.genre_id} value={genre.genre_id}>{genre.genre_name}</option>
+                            ))}
+                        </select>
                         <input
                             type="date"
                             name="release_date"
@@ -156,8 +222,8 @@ export default function Songs() {
                             onChange={handleChange}
                             required
                         />
-                        <button type="submit">Submit</button> {/* Submit button */}
-                        <button type="button" onClick={() => setIsOpen(false)}>Cancel</button> {/* Button to close dialog */}
+                        <button type="submit">Submit</button>
+                        <button type="button" onClick={() => setIsOpen(false)}>Cancel</button>
                     </form>
                 </div>
             )}
@@ -168,8 +234,8 @@ export default function Songs() {
                         <th>SONG ID</th>
                         <th>SONG NAME</th>
                         <th>DURATION</th>
-                        <th>ARTIST ID</th>
-                        <th>GENRE ID</th>
+                        <th>ARTIST NAME</th>
+                        <th>GENRE NAME</th>
                         <th>RELEASE DATE</th>
                         <th>PLAYS</th>
                     </tr>
@@ -180,23 +246,19 @@ export default function Songs() {
                             <td>{song.song_id}</td>
                             <td>{song.song_name}</td>
                             <td>{song.duration}</td>
-                            <td>{song.artist_id}</td>
-                            <td>{song.genre_id}</td>
+                            <td>{artists.find(artist => artist.artist_id === song.artist_id)?.artist_name}</td>
+                            <td>{genres.find(genre => genre.genre_id === song.genre_id)?.genre_name}</td>
                             <td>{song.release_date}</td>
-                            <td>
-                                {song.plays}
-                                <button onClick={() => increasePlays(song.song_id)}>▲</button> {/* Increment plays */}
-                                <button onClick={() => decreasePlays(song.song_id)}>▼</button> {/* Decrement plays */}
-                            </td>
+                            <td>{song.no_of_times_played}</td>
                             <td>
                                 <div className="actions">
                                     <span 
                                         className="dots"
-                                        onClick={() => toggleDropdown(index)} // Show options on click
+                                        onClick={() => toggleDropdown(index)}
                                     >
-                                        &#x22EE; {/* Vertical ellipsis */}
+                                        &#x22EE;
                                     </span>
-                                    {dropdownOpenIndex === index && ( // Show dropdown if this row is selected
+                                    {dropdownOpenIndex === index && (
                                         <div className="dropdown">
                                             <button onClick={() => handleEdit(song)}>Edit</button>
                                             <button onClick={() => handleDelete(song.song_id)}>Delete</button>

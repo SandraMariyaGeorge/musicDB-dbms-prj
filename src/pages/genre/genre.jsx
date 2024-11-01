@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import "../table.css"; // Import the CSS file for this component
 
 export default function Genres() {
@@ -11,7 +12,21 @@ export default function Genres() {
     const [editingGenre, setEditingGenre] = useState(null); // State for editing a genre
     const [dropdownOpenIndex, setDropdownOpenIndex] = useState(null); // State to manage dropdown visibility
 
-    // Function to handle input changes
+    // Fetch all genres from the backend
+    const fetchGenres = async () => {
+        try {
+            const response = await axios.get("http://localhost:3000/api/genres");
+            setGenres(response.data);
+        } catch (error) {
+            console.error("Error fetching genres:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchGenres();
+    }, []);
+
+    // Handle input changes
     const handleChange = (e) => {
         const { name, value } = e.target;
         setNewGenre((prev) => ({
@@ -20,24 +35,34 @@ export default function Genres() {
         }));
     };
 
-    // Function to handle form submission
-    const handleSubmit = (e) => {
+    // Handle form submission
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (editingGenre) {
             // Update existing genre
-            setGenres((prev) =>
-                prev.map(genre => genre.genre_id === editingGenre ? newGenre : genre)
-            );
-            setEditingGenre(null); // Reset editing genre state
+            try {
+                await axios.put(`http://localhost:3000/api/genres/${editingGenre}`, { genre_name: newGenre.genre_name });
+                setGenres((prev) =>
+                    prev.map((genre) => genre.genre_id === editingGenre ? newGenre : genre)
+                );
+                setEditingGenre(null);
+            } catch (error) {
+                console.error("Error updating genre:", error);
+            }
         } else {
-            // Add new genre to genres state
-            setGenres((prev) => [...prev, newGenre]);
+            // Add new genre
+            try {
+                const response = await axios.post("http://localhost:3000/api/genres", { genre_name: newGenre.genre_name });
+                setGenres((prev) => [...prev, response.data]);
+            } catch (error) {
+                console.error("Error adding genre:", error);
+            }
         }
-        setIsOpen(false); // Close dialog
-        resetForm(); // Reset form
+        setIsOpen(false);
+        resetForm();
     };
 
-    // Function to reset form
+    // Reset form
     const resetForm = () => {
         setNewGenre({
             genre_id: '',
@@ -45,29 +70,33 @@ export default function Genres() {
         });
     };
 
-    // Function to handle delete genre
-    const handleDelete = (genreId) => {
-        setGenres((prev) => prev.filter(genre => genre.genre_id !== genreId));
+    // Delete genre
+    const handleDelete = async (genreId) => {
+        try {
+            await axios.delete(`http://localhost:3000/api/genres/${genreId}`);
+            setGenres((prev) => prev.filter((genre) => genre.genre_id !== genreId));
+        } catch (error) {
+            console.error("Error deleting genre:", error);
+        }
     };
 
-    // Function to handle edit genre
+    // Edit genre
     const handleEdit = (genre) => {
-        setNewGenre(genre); // Set the form fields to the genre data
-        setEditingGenre(genre.genre_id); // Set the genre id of the genre being edited
-        setIsOpen(true); // Open the dialog
-        setDropdownOpenIndex(null); // Close dropdown on edit
+        setNewGenre(genre);
+        setEditingGenre(genre.genre_id);
+        setIsOpen(true);
+        setDropdownOpenIndex(null);
     };
 
-    // Function to toggle dropdown for specific row
+    // Toggle dropdown for specific row
     const toggleDropdown = (index) => {
-        setDropdownOpenIndex(dropdownOpenIndex === index ? null : index); // Toggle dropdown for the row
+        setDropdownOpenIndex(dropdownOpenIndex === index ? null : index);
     };
 
     return (
         <div>
             <button onClick={() => setIsOpen(true)}>Add Genre</button> {/* Button to open dialog */}
-
-            {isOpen && (  // Dialog box conditionally rendered
+            {isOpen && (
                 <div className="modal">
                     <h2>{editingGenre ? 'Edit Genre' : 'Add New Genre'}</h2>
                     <form onSubmit={handleSubmit}>
@@ -87,12 +116,11 @@ export default function Genres() {
                             onChange={handleChange}
                             required
                         />
-                        <button type="submit">Submit</button> {/* Submit button */}
-                        <button type="button" onClick={() => setIsOpen(false)}>Cancel</button> {/* Button to close dialog */}
+                        <button type="submit">Submit</button>
+                        <button type="button" onClick={() => setIsOpen(false)}>Cancel</button>
                     </form>
                 </div>
             )}
-
             <table>
                 <thead>
                     <tr>
@@ -109,11 +137,11 @@ export default function Genres() {
                                 <div className="actions">
                                     <span 
                                         className="dots"
-                                        onClick={() => toggleDropdown(index)} // Show options on click
+                                        onClick={() => toggleDropdown(index)}
                                     >
-                                        &#x22EE; {/* Vertical ellipsis */}
+                                        &#x22EE;
                                     </span>
-                                    {dropdownOpenIndex === index && ( // Show dropdown if this row is selected
+                                    {dropdownOpenIndex === index && (
                                         <div className="dropdown">
                                             <button onClick={() => handleEdit(genre)}>Edit</button>
                                             <button onClick={() => handleDelete(genre.genre_id)}>Delete</button>

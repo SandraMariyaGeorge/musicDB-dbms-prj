@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import "../table.css"; // Import the CSS file for this component
+import React, { useState, useEffect } from "react";
+import axios from "axios"; // Import axios
+import "../table.css";
 
 export default function User() {
     const [users, setUsers] = useState([]); // State to hold users
@@ -16,7 +17,22 @@ export default function User() {
     const [editingUser, setEditingUser] = useState(null); // State for editing a user
     const [dropdownOpenIndex, setDropdownOpenIndex] = useState(null); // State to manage dropdown visibility
 
-    // Function to handle input changes
+    // Fetch users on component mount
+    useEffect(() => {
+        fetchUsers();
+    }, []);
+
+    // Fetch all users from the backend
+    const fetchUsers = async () => {
+        try {
+            const response = await axios.get("http://localhost:3000/api/users");
+            setUsers(response.data);
+        } catch (error) {
+            console.error("Error fetching users:", error);
+        }
+    };
+
+    // Handle input changes
     const handleChange = (e) => {
         const { name, value } = e.target;
         setNewUser((prev) => ({
@@ -25,24 +41,27 @@ export default function User() {
         }));
     };
 
-    // Function to handle form submission
-    const handleSubmit = (e) => {
+    // Handle form submission
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (editingUser) {
-            // Update existing user
-            setUsers((prev) =>
-                prev.map(user => user.user_id === editingUser ? newUser : user)
-            );
-            setEditingUser(null); // Reset editing user state
-        } else {
-            // Add new user to users state
-            setUsers((prev) => [...prev, newUser]);
+        try {
+            if (editingUser) {
+                // Update existing user
+                await axios.put(`http://localhost:3000/api/users/${editingUser}`, newUser);
+                setEditingUser(null);
+            } else {
+                // Add new user
+                await axios.post("http://localhost:3000/api/users", newUser);
+            }
+            fetchUsers(); // Refresh users list
+            setIsOpen(false); // Close dialog
+            resetForm(); // Reset form
+        } catch (error) {
+            console.error("Error submitting user:", error);
         }
-        setIsOpen(false); // Close dialog
-        resetForm(); // Reset form
     };
 
-    // Function to reset form
+    // Reset form
     const resetForm = () => {
         setNewUser({
             user_id: '',
@@ -55,29 +74,34 @@ export default function User() {
         });
     };
 
-    // Function to handle delete user
-    const handleDelete = (userId) => {
-        setUsers((prev) => prev.filter(user => user.user_id !== userId));
+    // Delete a user
+    const handleDelete = async (userId) => {
+        try {
+            await axios.delete(`http://localhost:3000/api/users/${userId}`);
+            fetchUsers(); // Refresh users list
+        } catch (error) {
+            console.error("Error deleting user:", error);
+        }
     };
 
-    // Function to handle edit user
+    // Edit a user
     const handleEdit = (user) => {
-        setNewUser(user); // Set the form fields to the user data
-        setEditingUser(user.user_id); // Set the user id of the user being edited
+        setNewUser(user); // Fill form with user data
+        setEditingUser(user.user_id); // Set user_id for editing
         setIsOpen(true); // Open the dialog
-        setDropdownOpenIndex(null); // Close dropdown on edit
+        setDropdownOpenIndex(null); // Close dropdown
     };
 
-    // Function to toggle dropdown for specific row
+    // Toggle dropdown for specific row
     const toggleDropdown = (index) => {
-        setDropdownOpenIndex(dropdownOpenIndex === index ? null : index); // Toggle dropdown for the row
+        setDropdownOpenIndex(dropdownOpenIndex === index ? null : index);
     };
 
     return (
         <div>
-            <button onClick={() => setIsOpen(true)}>Add User</button> {/* Button to open dialog */}
+            <button onClick={() => setIsOpen(true)}>Add User</button>
 
-            {isOpen && (  // Dialog box conditionally rendered
+            {isOpen && (
                 <div className="modal">
                     <h2>{editingUser ? 'Edit User' : 'Add New User'}</h2>
                     <form onSubmit={handleSubmit}>
@@ -135,8 +159,8 @@ export default function User() {
                             onChange={handleChange}
                             required
                         />
-                        <button type="submit">Submit</button> {/* Submit button */}
-                        <button type="button" onClick={() => setIsOpen(false)}>Cancel</button> {/* Button to close dialog */}
+                        <button type="submit">Submit</button>
+                        <button type="button" onClick={() => setIsOpen(false)}>Cancel</button>
                     </form>
                 </div>
             )}
@@ -151,7 +175,6 @@ export default function User() {
                         <th>JOIN DATE</th>
                         <th>BIRTH DATE</th>
                         <th>COUNTRY</th>
-                        {/* Removed ACTIONS column */}
                     </tr>
                 </thead>
                 <tbody>
@@ -168,11 +191,11 @@ export default function User() {
                                 <div className="actions">
                                     <span 
                                         className="dots"
-                                        onClick={() => toggleDropdown(index)} // Show options on click
+                                        onClick={() => toggleDropdown(index)}
                                     >
-                                        &#x22EE; {/* Vertical ellipsis */}
+                                        &#x22EE;
                                     </span>
-                                    {dropdownOpenIndex === index && ( // Show dropdown if this row is selected
+                                    {dropdownOpenIndex === index && (
                                         <div className="dropdown">
                                             <button onClick={() => handleEdit(user)}>Edit</button>
                                             <button onClick={() => handleDelete(user.user_id)}>Delete</button>

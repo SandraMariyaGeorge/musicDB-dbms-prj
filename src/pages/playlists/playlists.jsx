@@ -1,9 +1,10 @@
-import React, { useState } from "react";
-import "../table.css"; // Import the CSS file for this component
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import "../table.css";
 
 export default function Playlists() {
-    const [playlists, setPlaylists] = useState([]); // State to hold playlists
-    const [isOpen, setIsOpen] = useState(false); // State to manage dialog box
+    const [playlists, setPlaylists] = useState([]); 
+    const [isOpen, setIsOpen] = useState(false);
     const [newPlaylist, setNewPlaylist] = useState({
         playlist_id: '',
         playlist_name: '',
@@ -11,10 +12,16 @@ export default function Playlists() {
         creation_date: '',
         is_public: false
     });
-    const [editingPlaylist, setEditingPlaylist] = useState(null); // State for editing a playlist
-    const [dropdownOpenIndex, setDropdownOpenIndex] = useState(null); // State to manage dropdown visibility
+    const [editingPlaylist, setEditingPlaylist] = useState(null);
+    const [dropdownOpenIndex, setDropdownOpenIndex] = useState(null);
 
-    // Function to handle input changes
+    // Fetch all playlists from backend on component mount
+    useEffect(() => {
+        axios.get("http://localhost:3000/api/playlists")
+            .then(response => setPlaylists(response.data))
+            .catch(error => console.error("Error fetching playlists:", error));
+    }, []);
+
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         setNewPlaylist((prev) => ({
@@ -23,24 +30,30 @@ export default function Playlists() {
         }));
     };
 
-    // Function to handle form submission
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (editingPlaylist) {
             // Update existing playlist
-            setPlaylists((prev) =>
-                prev.map(playlist => playlist.playlist_id === editingPlaylist ? newPlaylist : playlist)
-            );
-            setEditingPlaylist(null); // Reset editing playlist state
+            try {
+                const response = await axios.put(`http://localhost:3000/api/playlists/${editingPlaylist}`, newPlaylist);
+                setPlaylists(prev => prev.map(p => p.playlist_id === editingPlaylist ? response.data.updatedPlaylist : p));
+                setEditingPlaylist(null);
+            } catch (error) {
+                console.error("Error updating playlist:", error);
+            }
         } else {
-            // Add new playlist to playlists state
-            setPlaylists((prev) => [...prev, newPlaylist]);
+            // Add new playlist
+            try {
+                const response = await axios.post("http://localhost:3000/api/playlists", newPlaylist);
+                setPlaylists(prev => [...prev, response.data]);
+            } catch (error) {
+                console.error("Error adding playlist:", error);
+            }
         }
-        setIsOpen(false); // Close dialog
-        resetForm(); // Reset form
+        setIsOpen(false);
+        resetForm();
     };
 
-    // Function to reset form
     const resetForm = () => {
         setNewPlaylist({
             playlist_id: '',
@@ -51,29 +64,30 @@ export default function Playlists() {
         });
     };
 
-    // Function to handle delete playlist
-    const handleDelete = (playlistId) => {
-        setPlaylists((prev) => prev.filter(playlist => playlist.playlist_id !== playlistId));
+    const handleDelete = async (playlistId) => {
+        try {
+            await axios.delete(`http://localhost:3000/api/playlists/${playlistId}`);
+            setPlaylists(prev => prev.filter(playlist => playlist.playlist_id !== playlistId));
+        } catch (error) {
+            console.error("Error deleting playlist:", error);
+        }
     };
 
-    // Function to handle edit playlist
     const handleEdit = (playlist) => {
-        setNewPlaylist(playlist); // Set the form fields to the playlist data
-        setEditingPlaylist(playlist.playlist_id); // Set the playlist id of the playlist being edited
-        setIsOpen(true); // Open the dialog
-        setDropdownOpenIndex(null); // Close dropdown on edit
+        setNewPlaylist(playlist);
+        setEditingPlaylist(playlist.playlist_id);
+        setIsOpen(true);
+        setDropdownOpenIndex(null);
     };
 
-    // Function to toggle dropdown for specific row
     const toggleDropdown = (index) => {
-        setDropdownOpenIndex(dropdownOpenIndex === index ? null : index); // Toggle dropdown for the row
+        setDropdownOpenIndex(dropdownOpenIndex === index ? null : index);
     };
 
     return (
         <div>
-            <button onClick={() => setIsOpen(true)}>Add Playlist</button> {/* Button to open dialog */}
-
-            {isOpen && (  // Dialog box conditionally rendered
+            <button onClick={() => setIsOpen(true)}>Add Playlist</button>
+            {isOpen && (
                 <div className="modal">
                     <h2>{editingPlaylist ? 'Edit Playlist' : 'Add New Playlist'}</h2>
                     <form onSubmit={handleSubmit}>
@@ -117,8 +131,8 @@ export default function Playlists() {
                             />
                             Is Public
                         </label>
-                        <button type="submit">Submit</button> {/* Submit button */}
-                        <button type="button" onClick={() => setIsOpen(false)}>Cancel</button> {/* Button to close dialog */}
+                        <button type="submit">Submit</button>
+                        <button type="button" onClick={() => setIsOpen(false)}>Cancel</button>
                     </form>
                 </div>
             )}
@@ -145,11 +159,11 @@ export default function Playlists() {
                                 <div className="actions">
                                     <span 
                                         className="dots"
-                                        onClick={() => toggleDropdown(index)} // Show options on click
+                                        onClick={() => toggleDropdown(index)}
                                     >
-                                        &#x22EE; {/* Vertical ellipsis */}
+                                        &#x22EE;
                                     </span>
-                                    {dropdownOpenIndex === index && ( // Show dropdown if this row is selected
+                                    {dropdownOpenIndex === index && (
                                         <div className="dropdown">
                                             <button onClick={() => handleEdit(playlist)}>Edit</button>
                                             <button onClick={() => handleDelete(playlist.playlist_id)}>Delete</button>
