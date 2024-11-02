@@ -7,7 +7,7 @@ export default function User() {
     const [isOpen, setIsOpen] = useState(false); // State to manage dialog box
     const [newUser, setNewUser] = useState({
         id: '',
-        username: '',
+        name: '',
         email: '',
         subscription_plan: '',
         join_date: '',
@@ -65,7 +65,7 @@ export default function User() {
     const resetForm = () => {
         setNewUser({
             id: '',
-            username: '',
+            name: '',
             email: '',
             subscription_plan: '',
             join_date: '',
@@ -110,19 +110,19 @@ export default function User() {
                 <div className="modal">
                     <h2>{editingUser ? 'Edit User' : 'Add New User'}</h2>
                     <form onSubmit={handleSubmit}>
-                        <input
+                        {/* <input
                             type="text"
                             name="id"
                             placeholder="User ID"
                             value={newUser.id}
                             onChange={handleChange}
                             required
-                        />
+                        /> */}
                         <input
                             type="text"
-                            name="username"
-                            placeholder="Username"
-                            value={newUser.username}
+                            name="name"
+                            placeholder="name"
+                            value={newUser.name}
                             onChange={handleChange}
                             required
                         />

@@ -100,14 +100,14 @@ export default function Genres() {
                 <div className="modal">
                     <h2>{editingGenre ? 'Edit Genre' : 'Add New Genre'}</h2>
                     <form onSubmit={handleSubmit}>
-                        <input
+                        {/* <input
                             type="text"
                             name="id"
                             placeholder="Genre ID"
                             value={newGenre.id}
                             onChange={handleChange}
                             required
-                        />
+                        /> */}
                         <input
                             type="text"
                             name="genre_name"

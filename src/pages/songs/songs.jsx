@@ -5,7 +5,6 @@ export default function Songs() {
     const [songs, setSongs] = useState([]); // State to hold songs from backend
     const [isOpen, setIsOpen] = useState(false); // State to manage dialog box
     const [newSong, setNewSong] = useState({
-        song_id: '',
         song_name: '',
         duration: '',
         artist_id: '',
@@ -98,7 +97,7 @@ export default function Songs() {
                 body: JSON.stringify(newSong)
             });
             const updatedSong = await response.json();
-            setSongs((prev) => prev.map(song => song.song_id === songId ? updatedSong : song));
+            setSongs((prev) => prev.map(song => song.id === songId ? updatedSong : song));
         } catch (error) {
             console.error('Error updating song:', error);
         }
@@ -110,7 +109,7 @@ export default function Songs() {
             await fetch(`http://localhost:3000/api/songs/${songId}`, {
                 method: 'DELETE'
             });
-            setSongs((prev) => prev.filter(song => song.song_id !== songId));
+            setSongs((prev) => prev.filter(song => song.id !== songId));
         } catch (error) {
             console.error('Error deleting song:', error);
         }
@@ -118,7 +117,7 @@ export default function Songs() {
 
     const handleEdit = (song) => {
         setNewSong(song);
-        setEditingSong(song.song_id);
+        setEditingSong(song.id);
         setIsOpen(true);
         setDropdownOpenIndex(null);
     };
@@ -127,29 +126,15 @@ export default function Songs() {
         setDropdownOpenIndex(dropdownOpenIndex === index ? null : index);
     };
 
-    const increasePlays = async (songId) => {
-        const song = songs.find(song => song.song_id === songId);
-        if (song) {
-            await updateSong(songId, { ...song, plays: song.plays + 1 });
-        }
-    };
-
-    const decreasePlays = async (songId) => {
-        const song = songs.find(song => song.song_id === songId);
-        if (song && song.plays > 0) {
-            await updateSong(songId, { ...song, plays: song.plays - 1 });
-        }
-    };
-
     const resetForm = () => {
         setNewSong({
-            song_id: '',
+            id: '',
             song_name: '',
             duration: '',
             artist_id: '',
             genre_id: '',
             release_date: '',
-            plays: 0
+            no_of_times_played: 0
         });
     };
 
@@ -161,14 +146,14 @@ export default function Songs() {
                 <div className="modal">
                     <h2>{editingSong ? 'Edit Song' : 'Add New Song'}</h2>
                     <form onSubmit={handleSubmit}>
-                        <input
+                        {/* <input
                             type="text"
-                            name="song_id"
+                            name="id"
                             placeholder="Song ID"
-                            value={newSong.song_id}
+                            value={newSong.id}
                             onChange={handleChange}
                             required
-                        />
+                        /> */}
                         <input
                             type="text"
                             name="song_name"
@@ -185,28 +170,23 @@ export default function Songs() {
                             onChange={handleChange}
                             required
                         />
-                        <select
+                        <input
+                            type="text"
                             name="artist_id"
+                            placeholder="Artist ID"
                             value={newSong.artist_id}
                             onChange={handleChange}
                             required
-                        >
-                            <option value="">Select Artist</option>
-                            {artists.map(artist => (
-                                <option key={artist.artist_id} value={artist.artist_id}>{artist.artist_name}</option>
-                            ))}
-                        </select>
-                        <select
+                        />
+                        <input
+                            type="text"
                             name="genre_id"
+                            placeholder="Genre ID"
                             value={newSong.genre_id}
                             onChange={handleChange}
                             required
-                        >
-                            <option value="">Select Genre</option>
-                            {genres.map(genre => (
-                                <option key={genre.genre_id} value={genre.genre_id}>{genre.genre_name}</option>
-                            ))}
-                        </select>
+                        />
+                    
                         <input
                             type="date"
                             name="release_date"
@@ -216,9 +196,9 @@ export default function Songs() {
                         />
                         <input
                             type="number"
-                            name="plays"
+                            name="no_of_times_played"
                             placeholder="Number of Plays"
-                            value={newSong.plays}
+                            value={newSong.no_of_times_played}
                             onChange={handleChange}
                             required
                         />
@@ -234,8 +214,8 @@ export default function Songs() {
                         <th>SONG ID</th>
                         <th>SONG NAME</th>
                         <th>DURATION</th>
-                        <th>ARTIST NAME</th>
-                        <th>GENRE NAME</th>
+                        <th>ARTIST ID</th>
+                        <th>GENRE ID</th>
                         <th>RELEASE DATE</th>
                         <th>PLAYS</th>
                     </tr>
@@ -243,11 +223,11 @@ export default function Songs() {
                 <tbody>
                     {songs.map((song, index) => (
                         <tr key={index} className="song-row">
-                            <td>{song.song_id}</td>
+                            <td>{song.id}</td>
                             <td>{song.song_name}</td>
                             <td>{song.duration}</td>
-                            <td>{artists.find(artist => artist.artist_id === song.artist_id)?.artist_name}</td>
-                            <td>{genres.find(genre => genre.genre_id === song.genre_id)?.genre_name}</td>
+                            <td>{song.artist_id}</td>
+                            <td>{song.genre_id}</td>
                             <td>{song.release_date}</td>
                             <td>{song.no_of_times_played}</td>
                             <td>
@@ -261,7 +241,7 @@ export default function Songs() {
                                     {dropdownOpenIndex === index && (
                                         <div className="dropdown">
                                             <button onClick={() => handleEdit(song)}>Edit</button>
-                                            <button onClick={() => handleDelete(song.song_id)}>Delete</button>
+                                            <button onClick={() => handleDelete(song.id)}>Delete</button>
                                         </div>
                                     )}
                                 </div>

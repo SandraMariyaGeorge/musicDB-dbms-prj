@@ -7,10 +7,10 @@ export default function Playlists() {
     const [isOpen, setIsOpen] = useState(false);
     const [newPlaylist, setNewPlaylist] = useState({
         playlist_id: '',
-        playlist_name: '',
+        playlists_name: '',
         user_id: '',
         creation_date: '',
-        is_public: false
+        ispublic: false
     });
     const [editingPlaylist, setEditingPlaylist] = useState(null);
     const [dropdownOpenIndex, setDropdownOpenIndex] = useState(null);
@@ -36,7 +36,7 @@ export default function Playlists() {
             // Update existing playlist
             try {
                 const response = await axios.put(`http://localhost:3000/api/playlists/${editingPlaylist}`, newPlaylist);
-                setPlaylists(prev => prev.map(p => p.playlist_id === editingPlaylist ? response.data.updatedPlaylist : p));
+                setPlaylists(prev => prev.map(p => p.id === editingPlaylist ? response.data.updatedPlaylist : p));
                 setEditingPlaylist(null);
             } catch (error) {
                 console.error("Error updating playlist:", error);
@@ -56,18 +56,18 @@ export default function Playlists() {
 
     const resetForm = () => {
         setNewPlaylist({
-            playlist_id: '',
-            playlist_name: '',
+            id: '',
+            playlists_name: '',
             user_id: '',
             creation_date: '',
-            is_public: false
+            ispublic: false
         });
     };
 
     const handleDelete = async (playlistId) => {
         try {
             await axios.delete(`http://localhost:3000/api/playlists/${playlistId}`);
-            setPlaylists(prev => prev.filter(playlist => playlist.playlist_id !== playlistId));
+            setPlaylists(prev => prev.filter(playlist => playlist.id !== playlistId));
         } catch (error) {
             console.error("Error deleting playlist:", error);
         }
@@ -75,7 +75,7 @@ export default function Playlists() {
 
     const handleEdit = (playlist) => {
         setNewPlaylist(playlist);
-        setEditingPlaylist(playlist.playlist_id);
+        setEditingPlaylist(playlist.id);
         setIsOpen(true);
         setDropdownOpenIndex(null);
     };
@@ -84,6 +84,12 @@ export default function Playlists() {
         setDropdownOpenIndex(dropdownOpenIndex === index ? null : index);
     };
 
+    const formatDate = (dateString) => {
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString(undefined, options);
+    };
+
+
     return (
         <div>
             <button onClick={() => setIsOpen(true)}>Add Playlist</button>
@@ -91,19 +97,19 @@ export default function Playlists() {
                 <div className="modal">
                     <h2>{editingPlaylist ? 'Edit Playlist' : 'Add New Playlist'}</h2>
                     <form onSubmit={handleSubmit}>
-                        <input
+                        {/* <input
                             type="text"
-                            name="playlist_id"
+                            name="id"
                             placeholder="Playlist ID"
-                            value={newPlaylist.playlist_id}
+                            value={newPlaylist.id}
                             onChange={handleChange}
                             required
-                        />
+                        /> */}
                         <input
                             type="text"
-                            name="playlist_name"
+                            name="playlists_name"
                             placeholder="Playlist Name"
-                            value={newPlaylist.playlist_name}
+                            value={newPlaylist.playlists_name}
                             onChange={handleChange}
                             required
                         />
@@ -125,8 +131,8 @@ export default function Playlists() {
                         <label>
                             <input
                                 type="checkbox"
-                                name="is_public"
-                                checked={newPlaylist.is_public}
+                                name="ispublic"
+                                checked={newPlaylist.ispublic}
                                 onChange={handleChange}
                             />
                             Is Public
@@ -150,11 +156,11 @@ export default function Playlists() {
                 <tbody>
                     {playlists.map((playlist, index) => (
                         <tr key={index} className="playlist-row">
-                            <td>{playlist.playlist_id}</td>
-                            <td>{playlist.playlist_name}</td>
+                            <td>{playlist.id}</td>
+                            <td>{playlist.playlists_name}</td>
                             <td>{playlist.user_id}</td>
-                            <td>{playlist.creation_date}</td>
-                            <td>{playlist.is_public ? "Yes" : "No"}</td>
+                            <td>{formatDate(playlist.creation_date)}</td>
+                            <td>{playlist.ispublic ? "Yes" : "No"}</td>
                             <td>
                                 <div className="actions">
                                     <span 
@@ -166,7 +172,7 @@ export default function Playlists() {
                                     {dropdownOpenIndex === index && (
                                         <div className="dropdown">
                                             <button onClick={() => handleEdit(playlist)}>Edit</button>
-                                            <button onClick={() => handleDelete(playlist.playlist_id)}>Delete</button>
+                                            <button onClick={() => handleDelete(playlist.id)}>Delete</button>
                                         </div>
                                     )}
                                 </div>
