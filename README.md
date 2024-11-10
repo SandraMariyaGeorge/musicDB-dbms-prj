@@ -1,8 +1,28 @@
-# React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# Music Streaming Platform Database System (DBMS Micro Project)
 
-Currently, two official plugins are available:
+This project is part of a DBMS (Database Management Systems) micro project, where the backend is built using Node.js, Express, and PostgreSQL, and the frontend is an admin panel built with React. The system manages music-related data, such as songs, artists, users, playlists, and genres, for a music streaming platform.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Project Structure
+
+- **Frontend (React Admin Panel):** A React application for managing music data via an admin panel.
+- **Backend (Node.js + Express):** A REST API built with Node.js and Express to interact with a PostgreSQL database for CRUD operations.
+- **Database:** PostgreSQL database (hosted locally using Supabase) to store users, songs, artists, playlists, and genres.
+
+## Technologies Used
+
+- **Frontend:** 
+  - React
+  - Axios (for API calls)
+  
+- **Backend:**
+  - Node.js
+  - Express.js
+  - PostgreSQL (Supabase)
+
+backend repository- https://github.com/SandraMariyaGeorge/musicDB-backend.git
+
+## Contributors
+<a href="https://github.com/SandraMariyaGeorge/musicDB-dbms-prj/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=SandraMariyaGeorge/musicDB-dbms-prj" />
+</a>
